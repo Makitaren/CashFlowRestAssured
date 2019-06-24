@@ -1,10 +1,18 @@
 package payload;
 
 public class CashFlowGetResponse {
+    private Long id;
     private Double amount;
     private String description;
     private String date;
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public Double getAmount() {
         return amount;
@@ -29,4 +37,5 @@ public class CashFlowGetResponse {
     public void setDate(String date) {
         this.date = date;
     }
+
 }

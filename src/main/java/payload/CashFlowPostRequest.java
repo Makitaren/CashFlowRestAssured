@@ -6,6 +6,11 @@ public class CashFlowPostRequest {
     private String description;
     private String date;
 
+    public CashFlowPostRequest(Double amount, String description, String date) {
+        this.amount = amount;
+        this.description = description;
+        this.date = date;
+    }
 
     public Double getAmount() {
         return amount;

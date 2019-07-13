@@ -2,16 +2,50 @@ package test;
 
 import com.jayway.restassured.response.Response;
 import helper.CashFlowHelper;
-import org.junit.Test;
+import org.junit.Assert;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import payload.CashFlowGetResponse;
+import payload.CashFlowPostRequest;
 
 public class GetCashFlowById {
     protected CashFlowHelper cashFlowHelper = new CashFlowHelper();
+    private Long id = 0L;
+    private Double amount = 0D;
+    private String description = "";
+    private String date = "";
+
+    @BeforeEach
+    public void preparationForTest() {
+        this.amount = cashFlowHelper.getRandomAmount();
+        this.description = cashFlowHelper.getRandomDescription();
+        this.date = cashFlowHelper.getRandomDate();
+        CashFlowPostRequest cashFlowPostRequest = cashFlowHelper.createCashFlowRequest(amount, description, date);
+
+        Long id = Long.parseLong(cashFlowHelper.postCreateCashFlow(cashFlowPostRequest).getHeader("Location").substring(35));
+
+        this.id = id;
+    }
 
     @Test
     public void successGetCashFlowById() {
 
-        Response res = cashFlowHelper.getCashFlowById(cashFlowHelper.getExistCashFlowId(cashFlowHelper.getListCashFlows()));
+        Response response = cashFlowHelper.getCashFlowById(id);
 
-        res.then().statusCode(200);
+        CashFlowGetResponse cashFlowGetResponse1 = response.as(CashFlowGetResponse.class);
+
+        response.then().statusCode(200);
+        System.out.println(response.print());
+
+        Assert.assertEquals("Amount:", amount.toString(), cashFlowGetResponse1.getAmount().toString());
+        Assert.assertEquals("Description:", description, cashFlowGetResponse1.getDescription());
+        Assert.assertEquals("Date:", date, cashFlowGetResponse1.getDate());
+
+    }
+
+    @AfterEach
+    public void cleanAfterTest() {
+        cashFlowHelper.deleteCashFlowById(id);
     }
 }

@@ -35,4 +35,13 @@ public class CashFlowPostRequest {
     public void setDate(String date) {
         this.date = date;
     }
+
+    @Override
+    public String toString() {
+        return "CashFlowPostRequest{" +
+                "amount=" + amount +
+                ", description='" + description + '\'' +
+                ", date='" + date + '\'' +
+                '}';
+    }
 }

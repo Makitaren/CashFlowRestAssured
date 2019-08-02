@@ -1,18 +1,19 @@
 package helper;
 
-import com.jayway.restassured.response.Response;
+import javafx.util.Pair;
+import path.CashFlowPath;
 import payload.CashFlowGetResponse;
 import payload.CashFlowPostRequest;
 
-import java.io.File;
+import java.time.LocalDate;
 import java.util.*;
-import java.util.function.Predicate;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.jayway.restassured.RestAssured.given;
-
 public class CashFlowHelper {
+    protected CashFlowPath c = new CashFlowPath();
+
     public String getRandomDescription() {
         List<String> Descriptions = new ArrayList<String>();
         Descriptions.add("FOOD");
@@ -51,7 +52,7 @@ public class CashFlowHelper {
     }
 
     public String getRandomDate() {
-        Integer days = (int) (Math.random() * 30 + 1);
+        Integer days = (int) (Math.random() * 28 + 1);
         String day = days.toString();
         if (days.toString().length() < 2) {
             day = "0" + days.toString();
@@ -63,7 +64,7 @@ public class CashFlowHelper {
             month = "0" + months.toString();
         }
 
-        return "2020-" + month + "-" + day;
+        return "2019-" + month + "-" + day;
     }
 
     public String getAnotherRandomDate(String date) {
@@ -80,27 +81,39 @@ public class CashFlowHelper {
         return cashFlowPostRequest;
     }
 
+    public List<Pair<Long, CashFlowPostRequest>> createCashFlows(Integer amount) {
+        List<Pair<Long, CashFlowPostRequest>> cashFlows = new ArrayList<>();
+        for (int i = 0; i < amount; i++) {
+            CashFlowPostRequest cashFlowPostRequest = createCashFlowRequest(getRandomAmount(), getRandomDescription(), getRandomDate());
+            Long id = Long.parseLong(c.postCreateCashFlow(cashFlowPostRequest).getHeader("Location").substring(35));
+            Pair<Long, CashFlowPostRequest> entity = new Pair<>(id, cashFlowPostRequest);
+            cashFlows.add(entity);
+        }
+        return cashFlows;
+    }
+
     public List<CashFlowGetResponse> getListCashFlows() {
-        return Arrays.asList(getCashFlows().getBody().as(CashFlowGetResponse[].class));
+        return Arrays.asList(c.getCashFlows().getBody().as(CashFlowGetResponse[].class));
 
     }
 
-    public Long getExistCashFlowId(List<CashFlowGetResponse> list) {
-        return list.get((int) (Math.random() * list.size())).getId();
+    public List<CashFlowGetResponse> getListCashFlows(String startDate, String endDate) {
+        return Arrays.asList(c.getCashFlows(startDate, endDate).getBody().as(CashFlowGetResponse[].class));
+
     }
 
-    public Map<String, Float> getDifferent(Map<String, Float> first, Map<String, Float> second) {
-        return second.entrySet().stream()
-                .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue() - first.get(e.getKey())));
+    public List<CashFlowGetResponse> getListCashFlows(Integer period) {
+        return Arrays.asList(c.getCashFlows(period).getBody().as(CashFlowGetResponse[].class));
+
     }
 
-    public Map<String, Float> compareMaps(Map<String, Float> map1, Map<String, Float> map2) {
-        Map<String, Float> withoutNuLL  = map2.entrySet().stream()
+    public Map<String, Double> compareMaps(Map<String, Double> map1, Map<String, Double> map2) {
+        Map<String, Double> withoutNuLL = map2.entrySet().stream()
                 .filter(x -> map1.get(x.getKey()) != null)
                 .filter(x -> x.getValue() - map1.get(x.getKey()) != 0)
                 .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue() - map1.get(x.getKey())));
 
-        Map<String, Float> withNuLL = map2.entrySet().stream()
+        Map<String, Double> withNuLL = map2.entrySet().stream()
                 .filter(x -> map1.get(x.getKey()) == null)
                 .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
 
@@ -108,89 +121,51 @@ public class CashFlowHelper {
                 .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
     }
 
-    public Response postCreateCashFlow(CashFlowPostRequest cashFlowPostRequest) {
+    public int compareRequestWithResponse(List<Pair<Long, CashFlowPostRequest>> req, List<CashFlowGetResponse> res) {
+        AtomicInteger count = new AtomicInteger();
 
-        return given()
-                .contentType("application/json")
-                .body(cashFlowPostRequest)
-                .when()
-                .log()
-                .all()
-                .post("http://localhost:8080/api/cashFlow");
+        req.forEach((q) -> res.forEach((s) -> {
+            if (q.getKey().equals(s.getId()) && q.getValue().getAmount().equals(s.getAmount()) &&
+                    q.getValue().getDescription().equals(s.getDescription()) &&
+                    q.getValue().getDate().equals(s.getDate())) {
+
+                count.set(count.get() + 1);
+            }
+        }));
+
+        return count.get();
     }
 
-    public Response deleteCashFlowById(Long id) {
+    public List<Pair<Long, CashFlowPostRequest>> getCashFlowsByPeriod(List<Pair<Long, CashFlowPostRequest>> req, LocalDate startDate, LocalDate endDate) {
 
-        return given()
-                .contentType("application/json")
-                .pathParam("id", id)
-                .when()
-                .log()
-                .all()
-                .delete("http://localhost:8080/api/cashFlow/{id}");
+        List<Pair<Long, CashFlowPostRequest>> collect = req.stream()
+                .filter(x -> (startDate.isBefore(LocalDate.parse(x.getValue().getDate())) ||
+                        startDate.equals(LocalDate.parse(x.getValue().getDate()))) &&
+                        endDate.isAfter(LocalDate.parse(x.getValue().getDate())))
+                .collect(Collectors.toList());
+
+        return collect;
     }
 
-    public Response getCashFlowById(Long id) {
+    public int compareRequestWithResponseByPathParam(List<Pair<Long, CashFlowPostRequest>> req, List<CashFlowGetResponse> res) {
+        AtomicInteger count = new AtomicInteger();
 
-        return given()
-                .contentType("application/json")
-                .pathParam("id", id)
-                .when()
-                .log()
-                .all()
-                .get("http://localhost:8080/api/cashFlow/{id}");
+        req.forEach((q) -> res.forEach((s) -> {
+            if (q.getKey().equals(s.getId()) && q.getValue().getAmount().equals(s.getAmount()) &&
+                    q.getValue().getDescription().equals(s.getDescription()) &&
+                    q.getValue().getDate().equals(s.getDate())) {
+
+                count.set(count.get() + 1);
+            }
+        }));
+        return count.get();
     }
 
-    public Response getCashFlowRaport() {
-
-        return given()
-                .contentType("application/json")
-                .when()
-                .log()
-                .all()
-                .get("http://localhost:8080/api/cashFlow/raport");
-    }
-
-    public Response getCashFlows() {
-
-        return given()
-                .contentType("application/json")
-                .when()
-                .log()
-                .all()
-                .get("http://localhost:8080/api/cashFlows");
-    }
-
-    public Response postCashFlowByFile(String path) {
-
-        return given()
-                .multiPart("file", new File(path))
-                .contentType("multipart/form-data")
-                .when()
-                .log()
-                .all()
-                .post("http://localhost:8080/api/cashFlow/uploadCashFlow");
-    }
-
-    public Response putCashFlowById(CashFlowPostRequest cashFlowPostRequest, Long id) {
-
-        return given()
-                .contentType("application/json")
-                .pathParam("id", id)
-                .body(cashFlowPostRequest)
-                .when()
-                .log()
-                .all()
-                .put("http://localhost:8080/api/cashFlow/{id}");
-    }
-
-    public Response getDescriptionCashFlow() {
-
-        return given()
-                .contentType("text/plain;charset=UTF-8")
-                .when()
-                .log()
-                .all()
-                .get("http://localhost:8080");
+    public Map<String, Double> convertStringToDoubleInMap (Map<String, String> map){
+        return map
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(x -> x.getKey(), x -> Double.parseDouble(x.getValue())));
     }
 }
+

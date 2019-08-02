@@ -1,13 +1,15 @@
-package test;
+package test.cashFlow;
 
 import helper.CashFlowHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import path.CashFlowPath;
 import payload.CashFlowPostRequest;
 
 public class DeleteCashFlowById {
 
     protected CashFlowHelper cashFlowHelper = new CashFlowHelper();
+    protected CashFlowPath c = new CashFlowPath();
 
     private Long id = 0L;
 
@@ -16,15 +18,15 @@ public class DeleteCashFlowById {
         CashFlowPostRequest cashFlowPostRequest = cashFlowHelper.createCashFlowRequest(
                 cashFlowHelper.getRandomAmount(), cashFlowHelper.getRandomDescription(), cashFlowHelper.getRandomDate());
 
-        Long id = Long.parseLong(cashFlowHelper.postCreateCashFlow(cashFlowPostRequest).getHeader("Location").substring(35));
+        Long id = Long.parseLong(c.postCreateCashFlow(cashFlowPostRequest).getHeader("Location").substring(35));
 
         this.id = id;
     }
 
     @Test
     public void successDeleteCashFlowById() {
-        cashFlowHelper.deleteCashFlowById(id);
+        c.deleteCashFlowById(id);
 
-        cashFlowHelper.getCashFlowById(id).then().statusCode(404);
+        c.getCashFlowById(id).then().statusCode(404);
     }
 }

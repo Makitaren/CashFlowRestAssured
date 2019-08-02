@@ -1,15 +1,17 @@
-package test;
+package test.cashFlow;
 
 import helper.CashFlowHelper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import path.CashFlowPath;
 import payload.CashFlowGetResponse;
 
 import java.util.List;
 
 public class PostCashFlowByFile {
     protected CashFlowHelper cashFlowHelper = new CashFlowHelper();
+    protected CashFlowPath c = new CashFlowPath();
 
     String path;
     Long id = 1L;
@@ -18,17 +20,18 @@ public class PostCashFlowByFile {
 
     @BeforeEach
     public void preparationForTest() {
-        path = "/home/makitaren/Desktop/TestFile.csv";
+
+        path = "/home/makitaren/Documents/CashFlowFile/TestFile.csv";
         List<CashFlowGetResponse> cashFlows = cashFlowHelper.getListCashFlows();
 
-        id = Long.parseLong(cashFlowHelper.postCreateCashFlow(cashFlowHelper.createCashFlowRequest(cashFlowHelper.getRandomAmount(),
+        id = Long.parseLong(c.postCreateCashFlow(cashFlowHelper.createCashFlowRequest(cashFlowHelper.getRandomAmount(),
                 cashFlowHelper.getRandomDescription(), cashFlowHelper.getRandomDate())).getHeader("Location").substring(35));
     }
 
     @Test
     public void successPostCashFlowByFile() {
 
-        cashFlowHelper.postCashFlowByFile(path);
+        c.postCashFlowByFile(path);
         sizeAfter = cashFlowHelper.getListCashFlows().size();
 
     }
@@ -39,7 +42,7 @@ public class PostCashFlowByFile {
         int sizediff = sizeAfter - sizeBefore;
         for (Long i = id; i <= id + sizediff; i++) {
             System.out.println(i);
-            cashFlowHelper.deleteCashFlowById(i);
+            c.deleteCashFlowById(i);
         }
     }
 }

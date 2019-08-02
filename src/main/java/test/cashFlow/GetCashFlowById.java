@@ -1,4 +1,4 @@
-package test;
+package test.cashFlow;
 
 import com.jayway.restassured.response.Response;
 import helper.CashFlowHelper;
@@ -6,11 +6,14 @@ import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import path.CashFlowPath;
 import payload.CashFlowGetResponse;
 import payload.CashFlowPostRequest;
 
 public class GetCashFlowById {
     protected CashFlowHelper cashFlowHelper = new CashFlowHelper();
+    protected CashFlowPath c = new CashFlowPath();
+
     private Long id = 0L;
     private Double amount = 0D;
     private String description = "";
@@ -23,7 +26,7 @@ public class GetCashFlowById {
         this.date = cashFlowHelper.getRandomDate();
         CashFlowPostRequest cashFlowPostRequest = cashFlowHelper.createCashFlowRequest(amount, description, date);
 
-        Long id = Long.parseLong(cashFlowHelper.postCreateCashFlow(cashFlowPostRequest).getHeader("Location").substring(35));
+        Long id = Long.parseLong(c.postCreateCashFlow(cashFlowPostRequest).getHeader("Location").substring(35));
 
         this.id = id;
     }
@@ -31,7 +34,7 @@ public class GetCashFlowById {
     @Test
     public void successGetCashFlowById() {
 
-        Response response = cashFlowHelper.getCashFlowById(id);
+        Response response = c.getCashFlowById(id);
 
         CashFlowGetResponse cashFlowGetResponse1 = response.as(CashFlowGetResponse.class);
 
@@ -46,6 +49,6 @@ public class GetCashFlowById {
 
     @AfterEach
     public void cleanAfterTest() {
-        cashFlowHelper.deleteCashFlowById(id);
+        c.deleteCashFlowById(id);
     }
 }

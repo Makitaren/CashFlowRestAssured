@@ -10,10 +10,8 @@ import org.junit.jupiter.api.Test;
 import path.CashFlowPath;
 import payload.CashFlowGetResponse;
 import payload.CashFlowPostRequest;
-import payload.PeriodGetResponse;
 import payload.PeriodPostRequest;
 
-import java.time.LocalDate;
 import java.util.List;
 
 public class GetCashFlows {
@@ -40,7 +38,7 @@ public class GetCashFlows {
 
         resPathParamsBefore = h.getListCashFlows(1);
         resQueryParamsBefore = h.getListCashFlows("2019-01-01", "2019-07-01");
-        req = h.createCashFlows(sizeCreate);
+        req = h.createCashFlowsPairs(sizeCreate);
 
         sizeAfter = h.getListCashFlows().size();
         System.out.println("sizeAfter" + sizeAfter);
@@ -48,7 +46,7 @@ public class GetCashFlows {
         sizeDiff = sizeAfter - sizeBefore;
         System.out.println("sizeDiff" + sizeDiff);
 
-        periods = p.createPeriods(1);
+        periods = p.postPeriods(1);
 
         res = h.getListCashFlows();
         resQueryParams = h.getListCashFlows("2019-01-01", "2019-07-01");
@@ -68,27 +66,6 @@ public class GetCashFlows {
 
         Assert.assertEquals("The request and response are different:",
                 sizeCreate, h.compareRequestWithResponse(req, res));
-    }
-
-    @Test
-    public void successGetCashFlowsByQueryParams() {
-        List<Pair<Long, CashFlowPostRequest>> CashFlowsByPeriod = h.getCashFlowsByPeriod(req,
-                LocalDate.parse("2019-01-01"), LocalDate.parse("2019-07-01"));
-        int reqQueryParamsSize = h.compareRequestWithResponseByPathParam(CashFlowsByPeriod, resQueryParams);
-
-        Assert.assertEquals("The returned response does not match the searches:",
-                resQueryParams.size() - resQueryParamsBefore.size(), reqQueryParamsSize);
-    }
-
-    @Test
-    public void successGetCashFlowsByPathParam() {
-        PeriodGetResponse periodGetResponse = p.getPeriodById(1L);
-        List<Pair<Long, CashFlowPostRequest>> CashFlowsByPeriod = h.getCashFlowsByPeriod(req,
-                LocalDate.parse(periodGetResponse.getStartDate()), LocalDate.parse(periodGetResponse.getEndDate()));
-        int reqPathParamsSize = h.compareRequestWithResponseByPathParam(CashFlowsByPeriod, resQueryParams);
-
-        Assert.assertEquals("The returned response does not match the searches:",
-                resPathParams.size() - resPathParamsBefore.size(), reqPathParamsSize);
     }
 
     @AfterEach

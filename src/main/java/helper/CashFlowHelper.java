@@ -5,7 +5,6 @@ import path.CashFlowPath;
 import payload.CashFlowGetResponse;
 import payload.CashFlowPostRequest;
 
-import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -13,6 +12,7 @@ import java.util.stream.Stream;
 
 public class CashFlowHelper {
     protected CashFlowPath c = new CashFlowPath();
+    protected PeriodHelper p = new PeriodHelper();
 
     public String getRandomDescription() {
         List<String> Descriptions = new ArrayList<String>();
@@ -81,13 +81,24 @@ public class CashFlowHelper {
         return cashFlowPostRequest;
     }
 
-    public List<Pair<Long, CashFlowPostRequest>> createCashFlows(Integer amount) {
+    public List<Pair<Long, CashFlowPostRequest>> createCashFlowsPairs(Integer amount) {
         List<Pair<Long, CashFlowPostRequest>> cashFlows = new ArrayList<>();
         for (int i = 0; i < amount; i++) {
             CashFlowPostRequest cashFlowPostRequest = createCashFlowRequest(getRandomAmount(), getRandomDescription(), getRandomDate());
             Long id = Long.parseLong(c.postCreateCashFlow(cashFlowPostRequest).getHeader("Location").substring(35));
             Pair<Long, CashFlowPostRequest> entity = new Pair<>(id, cashFlowPostRequest);
             cashFlows.add(entity);
+        }
+        return cashFlows;
+    }
+
+    public Map<Long, CashFlowPostRequest> createCashFlowsMaps(Integer amount) {
+        Map<Long, CashFlowPostRequest> cashFlows = new HashMap<>();
+        for (int i = 0; i < amount; i++) {
+            CashFlowPostRequest cashFlowPostRequest = createCashFlowRequest(getRandomAmount(), getRandomDescription(), getRandomDate());
+            Long id = Long.parseLong(c.postCreateCashFlow(cashFlowPostRequest).getHeader("Location").substring(35));
+            Pair<Long, CashFlowPostRequest> entity = new Pair<>(id, cashFlowPostRequest);
+            cashFlows.put(id, cashFlowPostRequest);
         }
         return cashFlows;
     }
@@ -121,6 +132,14 @@ public class CashFlowHelper {
                 .collect(Collectors.toMap(x -> x.getKey(), x -> x.getValue()));
     }
 
+    public List<Map<String, Double>> compareListMaps(List<Map<String, Double>> map1, List<Map<String, Double>> map2) {
+        List<Map<String, Double>> differentMaps = new ArrayList<>();
+        for (int i = 0; i < map1.size(); i++) {
+            differentMaps.add(compareMaps(map1.get(i), map2.get(i)));
+        }
+        return differentMaps;
+    }
+
     public int compareRequestWithResponse(List<Pair<Long, CashFlowPostRequest>> req, List<CashFlowGetResponse> res) {
         AtomicInteger count = new AtomicInteger();
 
@@ -136,16 +155,6 @@ public class CashFlowHelper {
         return count.get();
     }
 
-    public List<Pair<Long, CashFlowPostRequest>> getCashFlowsByPeriod(List<Pair<Long, CashFlowPostRequest>> req, LocalDate startDate, LocalDate endDate) {
-
-        List<Pair<Long, CashFlowPostRequest>> collect = req.stream()
-                .filter(x -> (startDate.isBefore(LocalDate.parse(x.getValue().getDate())) ||
-                        startDate.equals(LocalDate.parse(x.getValue().getDate()))) &&
-                        endDate.isAfter(LocalDate.parse(x.getValue().getDate())))
-                .collect(Collectors.toList());
-
-        return collect;
-    }
 
     public int compareRequestWithResponseByPathParam(List<Pair<Long, CashFlowPostRequest>> req, List<CashFlowGetResponse> res) {
         AtomicInteger count = new AtomicInteger();
@@ -161,11 +170,17 @@ public class CashFlowHelper {
         return count.get();
     }
 
-    public Map<String, Double> convertStringToDoubleInMap (Map<String, String> map){
-        return map
-                .entrySet()
-                .stream()
-                .collect(Collectors.toMap(x -> x.getKey(), x -> Double.parseDouble(x.getValue())));
+    public List<Map<String, Double>> convertStringToDoubleInMap(List<Map<String, Float>> m) {
+        List<Map<String, Double>> list = new ArrayList<>();
+        for (int i = 0; i < m.size(); i++) {
+            Map<String, Float> map = m.get(i);
+            Map<String, Double> mapd = new HashMap<>();
+            for (Map.Entry<String, Float> entry : map.entrySet()) {
+                mapd.put(entry.getKey(), Double.valueOf(entry.getValue()));
+            }
+            list.add(mapd);
+        }
+        return list;
     }
 }
 

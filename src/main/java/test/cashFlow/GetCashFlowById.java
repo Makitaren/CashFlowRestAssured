@@ -1,54 +1,45 @@
 package test.cashFlow;
 
 import com.jayway.restassured.response.Response;
-import helper.CashFlowHelper;
+import helper.PeriodHelper;
 import org.junit.Assert;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import path.CashFlowPath;
-import payload.CashFlowGetResponse;
-import payload.CashFlowPostRequest;
+import org.junit.jupiter.api.Test;
+import path.PeriodPath;
+import payload.PeriodGetResponse;
+import payload.PeriodPostRequest;
 
 public class GetCashFlowById {
-    protected CashFlowHelper cashFlowHelper = new CashFlowHelper();
-    protected CashFlowPath c = new CashFlowPath();
+    protected PeriodHelper periodHelper = new PeriodHelper();
+    protected PeriodPath periodPath = new PeriodPath();
 
     private Long id = 0L;
-    private Double amount = 0D;
-    private String description = "";
-    private String date = "";
+    PeriodPostRequest periodPostRequest;
 
     @BeforeEach
     public void preparationForTest() {
-        this.amount = cashFlowHelper.getRandomAmount();
-        this.description = cashFlowHelper.getRandomDescription();
-        this.date = cashFlowHelper.getRandomDate();
-        CashFlowPostRequest cashFlowPostRequest = cashFlowHelper.createCashFlowRequest(amount, description, date);
+        periodPostRequest = periodHelper.postPeriods(1).get(0).getValue();
 
-        Long id = Long.parseLong(c.postCreateCashFlow(cashFlowPostRequest).getHeader("Location").substring(35));
+        id = Long.parseLong(periodPath.postCreatePeriod(periodPostRequest).getHeader("Location").substring(33));
 
         this.id = id;
     }
 
     @Test
     public void successGetCashFlowById() {
+        Response response = periodPath.getPeriodById(id);
 
-        Response response = c.getCashFlowById(id);
-
-        CashFlowGetResponse cashFlowGetResponse1 = response.as(CashFlowGetResponse.class);
+        PeriodGetResponse periodGetResponse = response.as(PeriodGetResponse.class);
 
         response.then().statusCode(200);
-        System.out.println(response.print());
 
-        Assert.assertEquals("Amount:", amount.toString(), cashFlowGetResponse1.getAmount().toString());
-        Assert.assertEquals("Description:", description, cashFlowGetResponse1.getDescription());
-        Assert.assertEquals("Date:", date, cashFlowGetResponse1.getDate());
-
+        Assert.assertEquals("startDate:", periodPostRequest.getStartDate(), periodGetResponse.getStartDate());
+        Assert.assertEquals("endDate:", periodPostRequest.getEndDate(), periodGetResponse.getEndDate());
     }
 
     @AfterEach
     public void cleanAfterTest() {
-        c.deleteCashFlowById(id);
+        periodPath.deletePeriodById(id);
     }
 }

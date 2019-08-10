@@ -41,16 +41,6 @@ public class CashFlowPath {
                 .get("http://localhost:8080/api/cashFlow/{id}");
     }
 
-    public Response getCashFlowRaport() {
-
-        return given()
-                .contentType("application/json")
-                .when()
-                .log()
-                .all()
-                .get("http://localhost:8080/api/cashFlow/raport");
-    }
-
     public Response getCashFlows() {
 
         return given()

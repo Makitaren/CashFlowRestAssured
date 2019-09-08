@@ -1,64 +1,48 @@
 package path;
 
 import com.jayway.restassured.response.Response;
-import payload.CashFlowPostRequest;
 import payload.SavingPostRequest;
 
 import static com.jayway.restassured.RestAssured.given;
 
-public class SavingPath {
+public class SavingPath extends RestAssuredTemplate {
     public Response postCreateSaving(SavingPostRequest savingPostRequest) {
 
         return given()
-                .contentType("application/json")
+                .spec(specApi)
                 .body(savingPostRequest)
-                .when()
-                .log()
-                .all()
-                .post("http://localhost:8080/api/saving");
+                .post("/saving");
     }
 
     public Response deleteSavingById(Long id) {
 
         return given()
-                .contentType("application/json")
+                .spec(specApi)
                 .pathParam("id", id)
-                .when()
-                .log()
-                .all()
-                .delete("http://localhost:8080/api/saving/{id}");
+                .delete("/saving/{id}");
     }
 
     public Response getSavindById(Long id) {
 
         return given()
-                .contentType("application/json")
+                .spec(specApi)
                 .pathParam("id", id)
-                .when()
-                .log()
-                .all()
-                .get("http://localhost:8080/api/saving/{id}");
+                .get("/saving/{id}");
     }
 
     public Response getSaving() {
 
         return given()
-                .contentType("application/json")
-                .when()
-                .log()
-                .all()
-                .get("http://localhost:8080/api/saving");
+                .spec(specApi)
+                .get("/saving");
     }
 
     public Response putSavingById(SavingPostRequest savingPostRequest, Long id) {
 
         return given()
-                .contentType("application/json")
+                .spec(specApi)
                 .pathParam("id", id)
                 .body(savingPostRequest)
-                .when()
-                .log()
-                .all()
-                .put("http://localhost:8080/api/saving/{id}");
+                .put("/saving/{id}");
     }
 }

@@ -5,59 +5,44 @@ import payload.PeriodPostRequest;
 
 import static com.jayway.restassured.RestAssured.given;
 
-public class PeriodPath {
+public class PeriodPath extends RestAssuredTemplate {
     public Response postCreatePeriod(PeriodPostRequest periodPostRequest) {
 
         return given()
-                .contentType("application/json")
+                .spec(specApi)
                 .body(periodPostRequest)
-                .when()
-                .log()
-                .all()
-                .post("http://localhost:8080/api/period");
+                .post("/period");
     }
 
     public Response deletePeriodById(Long id) {
 
         return given()
-                .contentType("application/json")
+                .spec(specApi)
                 .pathParam("id", id)
-                .when()
-                .log()
-                .all()
-                .delete("http://localhost:8080/api/period/{id}");
+                .delete("/period/{id}");
     }
 
     public Response getPeriods() {
 
         return given()
-                .contentType("application/json")
-                .when()
-                .log()
-                .all()
-                .get("http://localhost:8080/api/periods");
+                .spec(specApi)
+                .get("/periods");
     }
 
     public Response putPeriodById(PeriodPostRequest periodPostRequest, Long id) {
 
         return given()
-                .contentType("application/json")
+                .spec(specApi)
                 .pathParam("id", id)
                 .body(periodPostRequest)
-                .when()
-                .log()
-                .all()
-                .put("http://localhost:8080/api/period/{id}");
+                .put("/period/{id}");
     }
 
     public Response getPeriodById(Long id) {
 
         return given()
-                .contentType("application/json")
+                .spec(specApi)
                 .pathParam("id", id)
-                .when()
-                .log()
-                .all()
-                .get("http://localhost:8080/api/period/{id}");
+                .get("/period/{id}");
     }
 }

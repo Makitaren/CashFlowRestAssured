@@ -2,9 +2,9 @@ package test.cashFlow;
 
 import helper.CashFlowHelper;
 import org.junit.Assert;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
 import path.CashFlowPath;
 import payload.CashFlowGetResponse;
 import payload.CashFlowPostRequest;
@@ -24,8 +24,10 @@ public class PostCashFlow {
         this.description = cashFlowHelper.getRandomDescription();
         this.date = cashFlowHelper.getRandomDate();
     }
+
     @Test
     public void successCreateCashFlow() {
+
         CashFlowPostRequest cashFlowPostRequest = cashFlowHelper.createCashFlowRequest(amount, description, date);
 
         this.id = Long.parseLong(c.postCreateCashFlow(cashFlowPostRequest).getHeader("Location").substring(35));

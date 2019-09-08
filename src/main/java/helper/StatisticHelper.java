@@ -6,9 +6,11 @@ import payload.PeriodGetResponse;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class StatisticHelper {
     protected PeriodHelper p = new PeriodHelper();
@@ -72,10 +74,12 @@ public class StatisticHelper {
         List<List<Pair<Long, CashFlowPostRequest>>> list = getCashFlowsByPeriods(req);
         List<Map<String, Double>> back = new ArrayList<>();
 
-        for(int i = 0; i < list.size(); i++){
+        for (int i = 0; i < list.size(); i++) {
             back.add(getRaportByPeriods(list.get(i)));
         }
 
         return back;
     }
+
+
 }

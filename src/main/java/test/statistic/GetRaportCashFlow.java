@@ -44,7 +44,6 @@ public class GetRaportCashFlow {
         Assert.assertEquals(
                 added,
                 diff);
-
     }
 
     @AfterEach

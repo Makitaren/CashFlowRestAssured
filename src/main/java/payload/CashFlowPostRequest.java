@@ -12,6 +12,10 @@ public class CashFlowPostRequest {
         this.date = date;
     }
 
+    public CashFlowPostRequest() {
+
+    }
+
     public Double getAmount() {
         return amount;
     }
